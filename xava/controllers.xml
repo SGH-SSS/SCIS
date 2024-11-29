@@ -63,4 +63,9 @@
 		    class="ch.speleo.scis.ui.actions.InitReadWriteAction"/>
 	</controller>
 		
+	<controller name="PodiumScis">	
+		<action name="setPageRowCount" hidden="true" 
+		    class="ch.speleo.scis.ui.actions.PodiumSetPageRowCountAction"/>
+	</controller>
+	
 </controllers>

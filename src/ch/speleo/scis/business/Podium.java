@@ -14,6 +14,7 @@ import ch.speleo.scis.model.karst.SpeleoObject;
 public class Podium {
 	
 	public static final int NB_RESULT_PER_DEFAULT = 10;
+	public static final int NB_RESULT_MAX = 100;
 	
 	// utility to start for debug
 	
@@ -23,9 +24,10 @@ public class Podium {
 		Locale.setDefault(Locale.ENGLISH);
 
 		Podium podium = new Podium();
-		System.out.println(formatedListOfCaves(podium.getLongestCaves(20), "length"));
-		System.out.println(formatedListOfCaves(podium.getDeepestCaves(20), "depthAndElevationComputed"));
+		System.out.println(formatedListOfCaves(podium.getLongestCaves(NB_RESULT_PER_DEFAULT), "length"));
+		System.out.println(formatedListOfCaves(podium.getDeepestCaves(NB_RESULT_PER_DEFAULT), "depthAndElevationComputed"));
 	}
+
 	private static String formatedListOfCaves(List<SpeleoObject> caves, String criteria) {
 		StrBuilder str = new StrBuilder();
 		int i=0;
@@ -45,6 +47,8 @@ public class Podium {
 	public List<SpeleoObject> getLongestCaves(Integer nbCaves) {
 		if (nbCaves == null) {
 			nbCaves = NB_RESULT_PER_DEFAULT;
+		} else if (nbCaves > NB_RESULT_MAX) {
+			nbCaves = NB_RESULT_MAX;
 		}
 		StrBuilder queryStr = new StrBuilder();
 		queryStr.append("from ").append(SpeleoObject.class.getSimpleName());
@@ -58,6 +62,8 @@ public class Podium {
 	public List<SpeleoObject> getDeepestCaves(Integer nbCaves) {
 		if (nbCaves == null) {
 			nbCaves = NB_RESULT_PER_DEFAULT;
+		} else if (nbCaves > NB_RESULT_MAX) {
+			nbCaves = NB_RESULT_MAX;
 		}
 		String depthAndElevationComputedExpr = 
 				"  case when depth is not null and elevation is not null then (depth + elevation) " +
