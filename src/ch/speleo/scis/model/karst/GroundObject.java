@@ -79,7 +79,7 @@ uniqueConstraints = {
 @Views({ 
 	@View(name = "Short", members = "name, type, commune.name"), 
 	@View(name = "ShortWithId", members = "inventoryNr, baronNr, name, type, deleted"), 
-	@View(members = "definition [name; inventoryNr, nextInventoryNrs; cantonBaron, communeBaronNr, caveBaronNr; type; comment; deleted], " +
+	@View(members = "definition [name; inventoryNr, nextInventoryNrs; cantonBaron, communeBaronNr, caveBaronNr; localInventoryId; type; comment; deleted], " +
 			"location [locationAccuracy; commune; coordEast, coordEastLv95; coordNorth, coordNorthLv95; coordAltitude; mapNr]; " +
 			"verified; manager; creationDate, lastModifDate; literature; dataHistory; privacy; document; speleoObject; "),
 	@View(name=GenericIdentityWithRevision.AUDIT_VIEW_NAME, members = " auditedValues")
@@ -156,10 +156,13 @@ extends KarstObject implements Serializable {
     @Formula("concat(CANTON_BARON, case when (CANTON_BARON is null or CANTON_BARON = '') then '' else ' ' end, COMMUNE_BARON_NR, '/', CAVE_BARON_NR)")
 	@NotAudited
     private String baronNr;
-    /**
-     * Connected speleo object.
-     */
 
+    /**
+     * The identifier on the locally used information system, for example in AGH-DB.
+     */
+    @Column(name = "LOCAL_INVENTORY_NR", nullable = true, length=50)
+    private String localInventoryId;
+    
     /**
      * East coordinate (Y for geometers, X for matematicians) of the ground object.
      */
@@ -195,6 +198,9 @@ extends KarstObject implements Serializable {
     @SwissCoords(axis = Axis.NORTH, coordsSystem = CoordsSystem.LV95)
     private BigDecimal coordNorthLv95;
 
+    /**
+     * Connected speleo object.
+     */
     @ManyToOne
     @JoinColumn(name = "SPELEO_OBJECT_ID", nullable = true)
     @ReferenceView(value = "ShortWithId")

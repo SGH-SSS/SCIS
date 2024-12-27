@@ -66,3 +66,6 @@ alter table REVISION_CHANGE add constraint FK6966E09433925F9B foreign key (REVIS
 alter table SPELEO_OBJECT add constraint FK9462E5301C858424 foreign key (ID) references KARST_OBJECT;
 alter table SPELEO_OBJECT_HIST add constraint FKF5E968D11406DC56 foreign key (ID, REV) references KARST_OBJECT_HIST;
 create sequence hibernate_sequence;
+
+alter table GROUND_OBJECT add column LOCAL_INVENTORY_NR varchar(50);
+alter table GROUND_OBJECT_HIST add column LOCAL_INVENTORY_NR varchar(50);
