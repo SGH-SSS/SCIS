@@ -67,5 +67,14 @@ alter table SPELEO_OBJECT add constraint FK9462E5301C858424 foreign key (ID) ref
 alter table SPELEO_OBJECT_HIST add constraint FKF5E968D11406DC56 foreign key (ID, REV) references KARST_OBJECT_HIST;
 create sequence hibernate_sequence;
 
-alter table GROUND_OBJECT add column LOCAL_INVENTORY_NR varchar(50);
-alter table GROUND_OBJECT_HIST add column LOCAL_INVENTORY_NR varchar(50);
+-- 2024-12-28 external id for speleo object
+create table EXTERNAL_SOURCE (ID int8 not null, DELETED bool not null, CODE varchar(10) not null, NAME varchar(100) not null, primary key (ID));
+create table EXTERNAL_SOURCE_HIST (ID int8 not null, REV int4 not null, REVTYPE int2, DELETED bool, CODE varchar(10) not null, NAME varchar(100), primary key (ID, REV));
+alter table EXTERNAL_SOURCE add constraint EXTERNAL_SOURCE_CODE_UNIQUE unique (CODE);
+alter table EXTERNAL_SOURCE add constraint EXTERNAL_SOURCE_NAME_UNIQUE unique (NAME);
+alter table EXTERNAL_SOURCE_HIST add constraint EXTERNAL_SOURCE_HIST_FK_REVISION foreign key (REV) references REVISION;
+alter table SPELEO_OBJECT add column EXTERNAL_SOURCE_ID int8 references EXTERNAL_SOURCE;
+alter table SPELEO_OBJECT_HIST add column EXTERNAL_SOURCE_ID int8;
+alter table SPELEO_OBJECT add column EXTERNAL_ID varchar(36);
+alter table SPELEO_OBJECT_HIST add column EXTERNAL_ID varchar(36);
+alter table SPELEO_OBJECT add constraint SPELEO_OBJECT_EXTERNAL_ID_UNIQUE unique (EXTERNAL_SOURCE_ID, EXTERNAL_ID);
