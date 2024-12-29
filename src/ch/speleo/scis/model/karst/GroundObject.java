@@ -156,9 +156,6 @@ extends KarstObject implements Serializable {
     @Formula("concat(CANTON_BARON, case when (CANTON_BARON is null or CANTON_BARON = '') then '' else ' ' end, COMMUNE_BARON_NR, '/', CAVE_BARON_NR)")
 	@NotAudited
     private String baronNr;
-    /**
-     * Connected speleo object.
-     */
 
     /**
      * East coordinate (Y for geometers, X for matematicians) of the ground object.
@@ -195,6 +192,9 @@ extends KarstObject implements Serializable {
     @SwissCoords(axis = Axis.NORTH, coordsSystem = CoordsSystem.LV95)
     private BigDecimal coordNorthLv95;
 
+    /**
+     * Connected speleo object.
+     */
     @ManyToOne
     @JoinColumn(name = "SPELEO_OBJECT_ID", nullable = true)
     @ReferenceView(value = "ShortWithId")

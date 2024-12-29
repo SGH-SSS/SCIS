@@ -10,12 +10,18 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import javax.validation.ValidationException;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.hibernate.envers.Audited;
@@ -25,14 +31,18 @@ import org.openxava.annotations.LabelFormat;
 import org.openxava.annotations.LabelFormatType;
 import org.openxava.annotations.ListAction;
 import org.openxava.annotations.ListProperties;
+import org.openxava.annotations.NoFrame;
 import org.openxava.annotations.ReadOnly;
+import org.openxava.annotations.ReferenceView;
 import org.openxava.annotations.RowStyle;
 import org.openxava.annotations.Stereotype;
 import org.openxava.annotations.Tab;
 import org.openxava.annotations.View;
 import org.openxava.annotations.Views;
 import org.openxava.util.Labels;
+import org.openxava.util.XavaResources;
 
+import ch.speleo.scis.model.common.ExternalSource;
 import ch.speleo.scis.model.common.GenericIdentityWithRevision;
 import ch.speleo.scis.persistence.typemapping.CodedEnumType;
 import ch.speleo.scis.persistence.utils.SimpleQueries;
@@ -53,7 +63,7 @@ import lombok.Setter;
 @Views({ 
 	@View(name = "Short", members = "name, type, length, depthAndElevation"), 
 	@View(name = "ShortWithId", members = "systemNr, name, type, deleted"), 
-	@View(members = "definition [name; systemNr; type; documentationState; comment; deleted] " +
+	@View(members = "definition [name; systemNr; externalReference [externalId, externalSource]; type; documentationState; comment; deleted] " +
 			"dimensions [length; depth; elevation; depthAndElevation, depthAndElevationComputed]; " +
 			"verified; manager; creationDate, lastModifDate; literature; dataHistory; document; entrances; entrancesPermitted; "),
 	@View(name=GenericIdentityWithRevision.AUDIT_VIEW_NAME, members = " auditedValues")
@@ -61,9 +71,7 @@ import lombok.Setter;
 @Getter @Setter
 public class SpeleoObject 
 extends KarstObject implements Serializable {
-    /**
-     * Serial version UID.
-     */
+
     private static final long serialVersionUID = 18189381772661526L;
     
     /**
@@ -71,6 +79,20 @@ extends KarstObject implements Serializable {
      */
     @Column(name = "SYSTEM_NR", nullable = true, precision=8)
     private Integer systemNr;
+
+    /**
+     * The identifier in the external information system used locally, such as AGH-DB or a club database.
+     */
+    @Column(name = "EXTERNAL_ID", nullable = true, length=36)
+	@DisplaySize(value=8) 
+    private String externalId;
+
+    @ManyToOne
+    @JoinColumn(name = "EXTERNAL_SOURCE_ID", nullable = true)
+    @ReferenceView(value = "SpeleoObject")
+    @NoFrame
+    private ExternalSource externalSource;
+  
     /**
      * Type of the speleo object: cave, mine, ...
      */
@@ -79,6 +101,7 @@ extends KarstObject implements Serializable {
     	parameters={ @Parameter(name=TYPE, value=SpeleoObjectTypeEnum.CLASSNAME)})
 	@DisplaySize(value=30, forViews="Short, ShortWithId") 
     private SpeleoObjectTypeEnum type;
+
     /**
      * Length of the speleo object.
      */
@@ -157,7 +180,7 @@ extends KarstObject implements Serializable {
 		}
 	}
 
-    @ListProperties("revision.modificationDate, revision.username, deleted, systemNr, name, type, documentationState, " +
+    @ListProperties("revision.modificationDate, revision.username, deleted, systemNr, externalId, name, type, documentationState, " +
     		"length, depth, elevation, depthAndElevation, verified; manager.initialsAndName, literature, dataHistory")
     @ReadOnly
     public Collection<SpeleoObject> getAuditedValues() {
@@ -182,7 +205,16 @@ extends KarstObject implements Serializable {
 		builder.append(", documentationState=");
 		builder.append(documentationState);
 	}
-        
+
+    @PrePersist @PreUpdate
+    private void validate()  throws Exception {
+        if (StringUtils.isEmpty(externalId) != (externalSource == null)) {
+            throw new ValidationException(
+                XavaResources.getString("speleo_object_external_both")
+            );
+        }
+    }
+    
     public static SpeleoObject getBySystemNr(Integer systemNr) {
     	return SimpleQueries.getByUniqueField(SpeleoObject.class, "systemNr", systemNr);
     }

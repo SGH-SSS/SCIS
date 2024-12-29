@@ -16,6 +16,7 @@
 		<portlet id="KarstObjectDocument" /> 
 		<portlet id="AtlasSchweizExport" /> 
 		<portlet id="Commune" /> 
+		<portlet id="ExternalSource" /> 
 		<portlet id="RevisionChanges" />
    
 	</category>
